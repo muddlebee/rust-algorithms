@@ -86,7 +86,7 @@ where
                         &mut self.right
                     };
                     match target_node {
-                        Some(ref mut node) => {
+                        Some(node) => {
                             node.insert(value);
                         }
                         None => {
