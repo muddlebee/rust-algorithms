@@ -23,6 +23,8 @@ where
     }
 }
 
+///TODO:implement delete and modify methods
+
 impl<T> BinarySearchTree<T>
 where
     T: Ord,
@@ -76,7 +78,6 @@ where
         if self.value.is_none() {
             self.value = Some(value);
         } else {
-            //TODO: why self.value is used here? why not value?
             match &self.value {
                 None => (),
                 Some(key) => {
