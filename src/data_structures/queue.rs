@@ -47,6 +47,7 @@ mod tests {
     fn test_enqueue() {
         let mut queue: Queue<u8> = Queue::new();
         queue.enqueue(64);
+        print!("{:?}", queue);
         assert_eq!(queue.is_empty(), false);
     }
 

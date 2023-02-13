@@ -3,6 +3,8 @@ use std::ops::Deref;
 
 /// This struct implements as Binary Search Tree (BST), which is a
 /// simple data structure for storing sorted data
+/// where clause docs https://doc.rust-lang.org/rust-by-example/generics/where.html
+#[derive(Debug)]
 pub struct BinarySearchTree<T>
 where
     T: Ord,
@@ -74,6 +76,7 @@ where
         if self.value.is_none() {
             self.value = Some(value);
         } else {
+            //TODO: why self.value is used here? why not value?
             match &self.value {
                 None => (),
                 Some(key) => {
@@ -238,6 +241,7 @@ mod test {
         tree.insert("back away...I will deal with this jedi slime myself");
         tree.insert("your move");
         tree.insert("you fool");
+        print!("{:#?}", tree);
         tree
     }
 
