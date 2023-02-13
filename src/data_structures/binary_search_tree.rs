@@ -1,13 +1,15 @@
 use std::cmp::Ordering;
+use std::mem;
 use std::ops::Deref;
 
 /// This struct implements as Binary Search Tree (BST), which is a
 /// simple data structure for storing sorted data
 /// where clause docs https://doc.rust-lang.org/rust-by-example/generics/where.html
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct BinarySearchTree<T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
     value: Option<T>,
     left: Option<Box<BinarySearchTree<T>>>,
@@ -16,7 +18,7 @@ where
 
 impl<T> Default for BinarySearchTree<T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
     fn default() -> Self {
         Self::new()
@@ -27,7 +29,7 @@ where
 
 impl<T> BinarySearchTree<T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
     /// Create a new, empty BST
     pub fn new() -> BinarySearchTree<T> {
@@ -183,18 +185,73 @@ where
             None => None,
         }
     }
+
+    pub fn delete(&mut self, value: &T) {
+        match &self.value {
+            Some(key) => {
+                match key.cmp(value) {
+                    Ordering::Equal => {
+                        // key == value
+                        if self.left.is_none() && self.right.is_none() {
+                            self.value = None;
+                        } else if self.left.is_none() {
+                            match &mut self.right.take() {
+                                Some(node) => {
+                                    self.value = node.value.take();
+                                    self.left = node.left.take();
+                                    self.right = node.right.take();
+                                }
+                                None => (),
+                            }
+                        } else if self.right.is_none() {
+                            match &mut self.left.take() {
+                                Some(node) => {
+                                    self.value = node.value.take();
+                                    self.left = node.left.take();
+                                    self.right = node.right.take();
+                                }
+                                None => (),
+                            }
+                        } else {
+                            let mut node = self.right.as_mut().unwrap();
+                            while node.left.is_some() {
+                                node = node.left.as_mut().unwrap();
+                            }
+                            self.value = node.value.take();
+                            node.delete(&value);
+                        }
+                    }
+                    Ordering::Greater => {
+                        // key > value
+                        match &mut self.left {
+                            Some(node) => node.delete(value),
+                            None => (),
+                        }
+                    }
+                    Ordering::Less => {
+                        // key < value
+                        match &mut self.right {
+                            Some(node) => node.delete(value),
+                            None => (),
+                        }
+                    }
+                }
+            }
+            None => (),
+        }
+    }
 }
 
 struct BinarySearchTreeIter<'a, T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
     stack: Vec<&'a BinarySearchTree<T>>,
 }
 
 impl<'a, T> BinarySearchTreeIter<'a, T>
 where
-    T: Ord,
+    T: Ord + Clone,
 {
     pub fn new(tree: &BinarySearchTree<T>) -> BinarySearchTreeIter<T> {
         let mut iter = BinarySearchTreeIter { stack: vec![tree] };
@@ -211,7 +268,7 @@ where
 
 impl<'a, T> Iterator for BinarySearchTreeIter<'a, T>
 where
-    T: Ord,
+    T: Ord + Clone
 {
     type Item = &'a T;
 
@@ -344,4 +401,21 @@ mod test {
         assert_eq!(iter.next(), None);
         assert_eq!(iter.next(), None);
     }
+
+
+    //generate test cases for delete method
+    #[test]
+    fn test_delete(){
+        let mut tree = prequel_memes_tree();
+        tree.delete(&"hello there");
+        assert_eq!(tree.search(&"hello there"), false);
+        assert_eq!(tree.search(&"general kenobi"), true);
+        assert_eq!(tree.search(&"you are a bold one"), true);
+        assert_eq!(tree.search(&"kill him"), true);
+        assert_eq!(tree.search(&"back away...I will deal with this jedi slime myself"), true);
+        tree.delete(&"general kenobi");
+        assert_eq!(tree.search(&"hello there"), false);
+        assert_eq!(tree.search(&"general kenobi"), false);
+    }
+
 }
