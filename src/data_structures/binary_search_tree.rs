@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
-use std::mem;
 use std::ops::Deref;
+use bencher::Bencher;
 
 /// This struct implements as Binary Search Tree (BST), which is a
 /// simple data structure for storing sorted data
@@ -240,6 +240,81 @@ where
             None => (),
         }
     }
+
+    fn inorder_successor(&self, value: &T) -> Option<&T> {
+        match &self.value {
+            Some(key) => {
+                match key.cmp(value) {
+                    Ordering::Equal => {
+                        // key == value
+                        match &self.right {
+                            Some(node) => node.minimum(),
+                            None => None,
+                        }
+                    }
+                    Ordering::Greater => {
+                        // key > value
+                        match &self.left {
+                            Some(node) => {
+                                let val = node.inorder_successor(value);
+                                match val {
+                                    Some(_) => val,
+                                    None => Some(key),
+                                }
+                            }
+                            None => Some(key),
+                        }
+                    }
+                    Ordering::Less => {
+                        // key < value
+                        match &self.right {
+                            Some(node) => node.inorder_successor(value),
+                            None => None,
+                        }
+                    }
+                }
+            }
+            None => None,
+        }
+    }
+
+    fn inorder_predecessor(&self, value: &T) -> Option<&T> {
+        match &self.value {
+            Some(key) => {
+                match key.cmp(value) {
+                    Ordering::Equal => {
+                        // key == value
+                        match &self.left {
+                            Some(node) => node.maximum(),
+                            None => None,
+                        }
+                    }
+                    Ordering::Greater => {
+                        // key > value
+                        match &self.left {
+                            Some(node) => {
+                                let val = node.inorder_predecessor(value);
+                                match val {
+                                    Some(_) => val,
+                                    None => Some(key),
+                                }
+                            }
+                            None => Some(key),
+                        }
+                    }
+                    Ordering::Less => {
+                        // key < value
+                        match &self.right {
+                            Some(node) => node.inorder_predecessor(value),
+                            None => None,
+                        }
+                    }
+                }
+            }
+            None => None,
+        }
+    }
+
 }
 
 struct BinarySearchTreeIter<'a, T>
@@ -288,6 +363,8 @@ where
 
 #[cfg(test)]
 mod test {
+    use bencher::Bencher;
+    use crate::data_structures::binary_search_tree::test;
     use super::BinarySearchTree;
 
     fn prequel_memes_tree() -> BinarySearchTree<&'static str> {
@@ -416,6 +493,28 @@ mod test {
         tree.delete(&"general kenobi");
         assert_eq!(tree.search(&"hello there"), false);
         assert_eq!(tree.search(&"general kenobi"), false);
+    }
+
+    //add tests for inorder succesor
+    #[test]
+    fn test_inorder_succesor(){
+        let mut tree = prequel_memes_tree();
+        assert_eq!(tree.inorder_successor(&"hello there"), Some(&"kill him"));
+        assert_eq!(tree.inorder_successor(&"general kenobi"), Some(&"hello there"));
+        assert_eq!(tree.inorder_successor(&"you are a bold one"), Some(&"you fool"));
+        assert_eq!(tree.inorder_successor(&"kill him"), Some(&"you are a bold one"));
+        assert_eq!(tree.inorder_successor(&"back away...I will deal with this jedi slime myself"), Some(&"general kenobi"));
+        assert_eq!(tree.inorder_successor(&"your move"), None);
+        assert_eq!(tree.inorder_successor(&"you fool"), Some(&"your move"));
+    }
+
+    //add tests for inorder predecessor
+    #[test]
+    fn test_inorder_predecessor(){
+        let mut tree = prequel_memes_tree();
+        assert_eq!(tree.inorder_predecessor(&"hello there"), Some(&"general kenobi"));
+        assert_eq!(tree.inorder_predecessor(&"general kenobi"), Some(&"back away...I will deal with this jedi slime myself"));
+        assert_eq!(tree.inorder_predecessor(&"you are a bold one"), Some(&"kill him"));
     }
 
 }
