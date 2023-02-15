@@ -8,8 +8,8 @@ use bencher::Bencher;
 #[derive(Debug)]
 #[derive(Clone)]
 pub struct BinarySearchTree<T>
-where
-    T: Ord + Clone,
+    where
+        T: Ord + Clone,
 {
     value: Option<T>,
     left: Option<Box<BinarySearchTree<T>>>,
@@ -17,8 +17,8 @@ where
 }
 
 impl<T> Default for BinarySearchTree<T>
-where
-    T: Ord + Clone,
+    where
+        T: Ord + Clone,
 {
     fn default() -> Self {
         Self::new()
@@ -28,8 +28,8 @@ where
 ///TODO:implement delete and modify methods
 
 impl<T> BinarySearchTree<T>
-where
-    T: Ord + Clone,
+    where
+        T: Ord + Clone,
 {
     /// Create a new, empty BST
     pub fn new() -> BinarySearchTree<T> {
@@ -71,7 +71,7 @@ where
     }
 
     /// Returns a new iterator which iterates over this tree in order
-    pub fn iter(&self) -> impl Iterator<Item = &T> {
+    pub fn iter(&self) -> impl Iterator<Item=&T> {
         BinarySearchTreeIter::new(self)
     }
 
@@ -102,6 +102,7 @@ where
             }
         }
     }
+
 
     /// Returns the smallest value in this tree
     pub fn minimum(&self) -> Option<&T> {
@@ -315,18 +316,72 @@ where
         }
     }
 
+    fn delete_node(&mut self, value: &T) {
+        match &self.value {
+            Some(key) => {
+                match key.cmp(value) {
+                    Ordering::Equal => {
+                        // key == value
+                        if self.left.is_none() && self.right.is_none() {
+                            self.value = None;
+                        } else if self.left.is_none() {
+                            match &mut self.right.take() {
+                                Some(node) => {
+                                    self.value = node.value.take();
+                                    self.left = node.left.take();
+                                    self.right = node.right.take();
+                                }
+                                None => (),
+                            }
+                        } else if self.right.is_none() {
+                            match &mut self.left.take() {
+                                Some(node) => {
+                                    self.value = node.value.take();
+                                    self.left = node.left.take();
+                                    self.right = node.right.take();
+                                }
+                                None => (),
+                            }
+                        } else {
+                            let mut node = self.right.as_mut().unwrap();
+                            while node.left.is_some() {
+                                node = node.left.as_mut().unwrap();
+                            }
+                            self.value = node.value.take();
+                            node.delete(&value);
+                        }
+                    }
+                    Ordering::Greater => {
+                        // key > value
+                        match &mut self.left {
+                            Some(node) => node.delete(value),
+                            None => (),
+                        }
+                    }
+                    Ordering::Less => {
+                        // key < value
+                        match &mut self.right {
+                            Some(node) => node.delete(value),
+                            None => (),
+                        }
+                    }
+                }
+            }
+            None => (),
+        }
+    }
 }
 
 struct BinarySearchTreeIter<'a, T>
-where
-    T: Ord + Clone,
+    where
+        T: Ord + Clone,
 {
     stack: Vec<&'a BinarySearchTree<T>>,
 }
 
 impl<'a, T> BinarySearchTreeIter<'a, T>
-where
-    T: Ord + Clone,
+    where
+        T: Ord + Clone,
 {
     pub fn new(tree: &BinarySearchTree<T>) -> BinarySearchTreeIter<T> {
         let mut iter = BinarySearchTreeIter { stack: vec![tree] };
@@ -342,8 +397,8 @@ where
 }
 
 impl<'a, T> Iterator for BinarySearchTreeIter<'a, T>
-where
-    T: Ord + Clone
+    where
+        T: Ord + Clone
 {
     type Item = &'a T;
 
@@ -389,7 +444,7 @@ mod test {
         assert!(tree.search(&"you fool"));
         assert!(tree.search(&"kill him"));
         assert!(
-            !tree.search(&"but i was going to tosche station to pick up some power converters",)
+            !tree.search(&"but i was going to tosche station to pick up some power converters")
         );
         assert!(!tree.search(&"only a sith deals in absolutes"));
         assert!(!tree.search(&"you underestimate my power"));
@@ -397,6 +452,7 @@ mod test {
 
     #[test]
     fn test_maximum_and_minimum() {
+        assert_eq!(BinarySearchTree::<i32>::new().maximum(), None);
         let tree = prequel_memes_tree();
         assert_eq!(*tree.maximum().unwrap(), "your move");
         assert_eq!(
@@ -482,7 +538,7 @@ mod test {
 
     //generate test cases for delete method
     #[test]
-    fn test_delete(){
+    fn test_delete() {
         let mut tree = prequel_memes_tree();
         tree.delete(&"hello there");
         assert_eq!(tree.search(&"hello there"), false);
@@ -497,7 +553,7 @@ mod test {
 
     //add tests for inorder succesor
     #[test]
-    fn test_inorder_succesor(){
+    fn test_inorder_succesor() {
         let mut tree = prequel_memes_tree();
         assert_eq!(tree.inorder_successor(&"hello there"), Some(&"kill him"));
         assert_eq!(tree.inorder_successor(&"general kenobi"), Some(&"hello there"));
@@ -510,11 +566,12 @@ mod test {
 
     //add tests for inorder predecessor
     #[test]
-    fn test_inorder_predecessor(){
+    fn test_inorder_predecessor() {
         let mut tree = prequel_memes_tree();
         assert_eq!(tree.inorder_predecessor(&"hello there"), Some(&"general kenobi"));
         assert_eq!(tree.inorder_predecessor(&"general kenobi"), Some(&"back away...I will deal with this jedi slime myself"));
         assert_eq!(tree.inorder_predecessor(&"you are a bold one"), Some(&"kill him"));
     }
+
 
 }
