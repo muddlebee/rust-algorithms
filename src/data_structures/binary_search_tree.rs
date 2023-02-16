@@ -626,5 +626,9 @@ mod test {
         tree2.insert_node(&2);
         print!("{:?}", tree2);
         assert_eq!(tree2.search(&2), true);
+        tree2.insert_node(&3);
+        tree2.insert_node(&4);
+        tree2.insert_node(&5);
+        assert_eq!(tree2.search(&5), true);
     }
 }
