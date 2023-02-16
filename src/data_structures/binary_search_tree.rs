@@ -31,15 +31,6 @@ impl<T> BinarySearchTree<T>
     where
         T: Ord + Clone,
 {
-    /// Create a new, empty BST
-    pub fn new() -> BinarySearchTree<T> {
-        BinarySearchTree {
-            value: None,
-            left: None,
-            right: None,
-        }
-    }
-
     /// Find a value in this tree. Returns True iff value is in this
     /// tree, and false otherwise
     pub fn search(&self, value: &T) -> bool {
@@ -67,6 +58,15 @@ impl<T> BinarySearchTree<T>
                 }
             }
             None => false,
+        }
+    }
+
+    /// Create a new, empty BST
+    pub fn new() -> BinarySearchTree<T> {
+        BinarySearchTree {
+            value: None,
+            left: None,
+            right: None,
         }
     }
 
@@ -98,6 +98,49 @@ impl<T> BinarySearchTree<T>
                             *target_node = Some(Box::new(node));
                         }
                     }
+                }
+            }
+        }
+    }
+
+    //insert a value into the appropriate location in this tree.
+    pub fn insert_node(&mut self, value: &T) {
+        if self.value.is_none() {
+            self.value = Some(value.clone());
+        } else {
+            match &self.value {
+                Some(key) => {
+                    match key.cmp(value) {
+                        Ordering::Equal => {}
+                        Ordering::Greater => {
+                            // key > value
+                            match &mut self.left {
+                                Some(node) => node.insert_node(value),
+                                None => {
+                                    //insert a new node and return the reference to the new node
+                                    let mut node = BinarySearchTree::new();
+                                    node.value = Some(value.clone());
+                                    self.left = Some(Box::new(node));
+
+                                },
+                            };
+                        }
+                        Ordering::Less => {
+                            // key < value
+                            match &mut self.right {
+                                Some(node) => node.insert_node(value),
+                                None => {
+                                    let mut node = BinarySearchTree::new();
+                                    node.value = Some(value.clone());
+                                    self.right = Some(Box::new(node));
+
+                                },
+                            };
+                        }
+                    }
+                }
+                None => {
+
                 }
             }
         }
@@ -435,6 +478,7 @@ mod test {
         tree
     }
 
+
     #[test]
     fn test_search() {
         let tree = prequel_memes_tree();
@@ -573,5 +617,14 @@ mod test {
         assert_eq!(tree.inorder_predecessor(&"you are a bold one"), Some(&"kill him"));
     }
 
-
+    //add tests for insert_node
+    #[test]
+    fn test_insert_node() {
+        let mut tree2: BinarySearchTree<i32> = BinarySearchTree::new();
+        tree2.insert_node(&1);
+        assert_eq!(tree2.search(&1), true);
+        tree2.insert_node(&2);
+        print!("{:?}", tree2);
+        assert_eq!(tree2.search(&2), true);
+    }
 }
