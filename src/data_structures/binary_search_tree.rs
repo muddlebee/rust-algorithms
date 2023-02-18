@@ -105,9 +105,6 @@ impl<T> BinarySearchTree<T>
 
     //insert a value into the appropriate location in this tree.
     pub fn insert_node(&mut self, value: &T) {
-        if self.value.is_none() {
-            self.value = Some(value.clone());
-        } else {
             match &self.value {
                 Some(key) => {
                     match key.cmp(value) {
@@ -120,6 +117,7 @@ impl<T> BinarySearchTree<T>
                                     //insert a new node and return the reference to the new node
                                     let mut node = BinarySearchTree::new();
                                     node.value = Some(value.clone());
+                                    // we are returning self.left back to the caller because we want to modify the left node
                                     self.left = Some(Box::new(node));
 
                                 },
@@ -132,6 +130,7 @@ impl<T> BinarySearchTree<T>
                                 None => {
                                     let mut node = BinarySearchTree::new();
                                     node.value = Some(value.clone());
+                                    // we are returning self.right back to the caller because we want to modify the right node
                                     self.right = Some(Box::new(node));
 
                                 },
@@ -140,10 +139,9 @@ impl<T> BinarySearchTree<T>
                     }
                 }
                 None => {
-
+                    self.value = Some(value.clone());
                 }
             }
-        }
     }
 
 
@@ -624,11 +622,41 @@ mod test {
         tree2.insert_node(&1);
         assert_eq!(tree2.search(&1), true);
         tree2.insert_node(&2);
-        print!("{:?}", tree2);
         assert_eq!(tree2.search(&2), true);
         tree2.insert_node(&3);
         tree2.insert_node(&4);
         tree2.insert_node(&5);
         assert_eq!(tree2.search(&5), true);
+        print!("{:?}", tree2);
+    }
+
+    //test cases for delete_node
+    #[test]
+    fn test_delete_node() {
+        let mut tree = prequel_memes_tree();
+        tree.delete_node(&"hello there");
+        assert_eq!(tree.search(&"hello there"), false);
+        assert_eq!(tree.search(&"general kenobi"), true);
+        assert_eq!(tree.search(&"you are a bold one"), true);
+        assert_eq!(tree.search(&"kill him"), true);
+        assert_eq!(tree.search(&"back away...I will deal with this jedi slime myself"), true);
+        tree.delete_node(&"general kenobi");
+        assert_eq!(tree.search(&"hello there"), false);
+        assert_eq!(tree.search(&"general kenobi"), false);
+    }
+
+    //test cases for insert_node with delete_node and search
+    #[test]
+    fn test_insert_delete_search() {
+        let mut tree: BinarySearchTree<&str> = BinarySearchTree::new();
+        tree.insert_node(&"hello there");
+        assert_eq!(tree.search(&"hello there"), true);
+        tree.delete_node(&"hello there");
+        assert_eq!(tree.search(&"hello there"), false);
+        tree.insert_node(&"general kenobi");
+        assert_eq!(tree.search(&"general kenobi"), true);
+        tree.delete_node(&"general kenobi");
+        assert_eq!(tree.search(&"general kenobi"), false);
+        print!("{:?}", tree);
     }
 }
