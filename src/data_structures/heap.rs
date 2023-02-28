@@ -10,10 +10,10 @@ use std::default::Default;
 // - Add a heapify method
 // - Add a heapsort method
 
-
+#[derive(Clone)]
 pub struct Heap<T>
-where
-    T: Default,
+    where
+        T: Default + Clone,
 {
     count: usize,
     items: Vec<T>,
@@ -21,8 +21,8 @@ where
 }
 
 impl<T> Heap<T>
-where
-    T: Default,
+    where
+        T: Default + Clone,
 {
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
@@ -59,19 +59,35 @@ where
         }
     }
 
-/*    // delete element at index
-    pub fn delete(&mut self, idx: usize) -> Option<T> {
-       if idx > self.count {
-                return None;
-            }
-        let temp = self.items[idx].clone();
+    // delete element at index
+    pub fn delete_min_heap(&mut self, idx: usize) -> Option<T> {
+        if idx > self.count {
+            return None;
+        }
+        let mut temp = self.items[idx].clone();
         self.items.swap(idx, self.count);
+        self.items.pop();
         self.count -= 1;
-        if idx == 0 {
+        if idx == 1 {
             self.heapify_down(idx);
         }
         Some(temp)
-    }*/
+    }
+
+    //delete element at index for max heap
+    pub fn delete_max_heap(&mut self, idx: usize) -> Option<T> {
+        if idx > self.count {
+            return None;
+        }
+        let mut temp = self.items[idx].clone();
+        self.items.swap(idx, self.count);
+        self.items.pop();
+        self.count -= 1;
+        if idx == 1 {
+            self.heapify_down(idx);
+        }
+        Some(temp)
+    }
 
 
     // write a function to heapify down
@@ -79,7 +95,7 @@ where
         if idx > self.count {
             return;
         }
-       while self.children_present(idx) {
+        while self.children_present(idx) {
             let smallest_child_idx = self.smallest_child_idx(idx);
             if (self.comparator)(&self.items[smallest_child_idx], &self.items[idx]) {
                 self.items.swap(idx, smallest_child_idx);
@@ -90,10 +106,10 @@ where
 
     // write a function to heapify up
     pub fn heapify_up(&mut self, mut idx: usize) {
-        if idx > self.count{
+        if idx > self.count {
             return;
         }
-        while self.parent_present(idx){
+        while self.parent_present(idx) {
             let parent_idx = self.parent_idx(idx);
             if (self.comparator)(&self.items[idx], &self.items[parent_idx]) {
                 self.items.swap(idx, parent_idx);
@@ -139,8 +155,8 @@ where
 }
 
 impl<T> Heap<T>
-where
-    T: Default + Ord,
+    where
+        T: Default + Ord + Clone,
 {
     /// Create a new MinHeap
     pub fn new_min() -> Heap<T> {
@@ -154,8 +170,8 @@ where
 }
 
 impl<T> Iterator for Heap<T>
-where
-    T: Default,
+    where
+        T: Default + Clone,
 {
     type Item = T;
 
@@ -188,6 +204,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn test_empty_heap() {
         let mut heap: Heap<i32> = Heap::new_max();
@@ -224,7 +241,9 @@ mod tests {
         assert_eq!(heap.next(), Some(2));
     }
 
+    #[derive(Clone)]
     struct Point(/* x */ i32, /* y */ i32);
+
     impl Default for Point {
         fn default() -> Self {
             Self(0, 0)
@@ -256,12 +275,11 @@ mod tests {
         assert_eq!(heap.smallest_child_idx(1), 2);
         assert_eq!(heap.smallest_child_idx(2), 4);
         assert_eq!(heap.smallest_child_idx(3), 6);
-
     }
 
     //tests for heapify_up
     #[test]
-    fn test_heapify_up(){
+    fn test_heapify_up() {
         let mut heap = Heap::new_max();
         heap.add(4);
         heap.add(2);
@@ -274,7 +292,7 @@ mod tests {
 
     //tests for heapify_down
     #[test]
-    fn test_heapify_down(){
+    fn test_heapify_down() {
         let mut heap = Heap::new_min();
         heap.add(4);
         heap.add(2);
@@ -283,5 +301,31 @@ mod tests {
         heap.heapify_down(1);
         println!("heap items {:?}", heap.items);
         assert_eq!(heap.items[1], 2);
+    }
+
+    //tests for delete_max_heap
+    #[test]
+    fn test_delete_max_heap() {
+        let mut heap = Heap::new_max();
+        heap.add(4);
+        heap.add(2);
+        heap.add(9);
+        heap.add(11);
+        heap.delete_max_heap(1);
+        println!("heap items {:?}", heap.items);
+        assert_eq!(heap.items[1], 9);
+    }
+
+    //tests for delete_min_heap
+    #[test]
+    fn test_delete_min_heap() {
+        let mut heap = Heap::new_min();
+        heap.add(4);
+        heap.add(2);
+        heap.add(9);
+        heap.add(11);
+        heap.delete_min_heap(1);
+        println!("heap items {:?}", heap.items);
+        assert_eq!(heap.items[1], 4);
     }
 }
