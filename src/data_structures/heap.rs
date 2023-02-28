@@ -68,6 +68,7 @@ where
         self.left_child_idx(idx) + 1
     }
 
+    // Returns the index of the smallest child
     fn smallest_child_idx(&self, idx: usize) -> usize {
         if self.right_child_idx(idx) > self.count {
             self.left_child_idx(idx)
@@ -187,5 +188,20 @@ mod tests {
         assert_eq!(heap.next().unwrap().0, 1);
         heap.add(Point(50, 34));
         assert_eq!(heap.next().unwrap().0, 3);
+    }
+
+    //tests for smallest_child_idx
+    #[test]
+    fn test_smallest_child_idx() {
+        let mut heap = Heap::new_min();
+        heap.add(4);
+        heap.add(2);
+        heap.add(9);
+        heap.add(11);
+        println!("size of heap {:?}", heap.len());
+        assert_eq!(heap.smallest_child_idx(1), 2);
+        assert_eq!(heap.smallest_child_idx(2), 4);
+        assert_eq!(heap.smallest_child_idx(3), 6);
+
     }
 }
