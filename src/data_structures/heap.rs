@@ -4,6 +4,13 @@
 use std::cmp::Ord;
 use std::default::Default;
 
+//TODO:
+// - Add a remove method
+// - Add a peek method
+// - Add a heapify method
+// - Add a heapsort method
+
+
 pub struct Heap<T>
 where
     T: Default,
