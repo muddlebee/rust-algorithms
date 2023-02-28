@@ -59,8 +59,55 @@ where
         }
     }
 
+/*    // delete element at index
+    pub fn delete(&mut self, idx: usize) -> Option<T> {
+       if idx > self.count {
+                return None;
+            }
+        let temp = self.items[idx].clone();
+        self.items.swap(idx, self.count);
+        self.count -= 1;
+        if idx == 0 {
+            self.heapify_down(idx);
+        }
+        Some(temp)
+    }*/
+
+
+    // write a function to heapify down
+    pub fn heapify_down(&mut self, mut idx: usize) {
+        if idx > self.count {
+            return;
+        }
+       while self.children_present(idx) {
+            let smallest_child_idx = self.smallest_child_idx(idx);
+            if (self.comparator)(&self.items[smallest_child_idx], &self.items[idx]) {
+                self.items.swap(idx, smallest_child_idx);
+            }
+            idx = smallest_child_idx;
+        }
+    }
+
+    // write a function to heapify up
+    pub fn heapify_up(&mut self, mut idx: usize) {
+        if idx > self.count{
+            return;
+        }
+        while self.parent_present(idx){
+            let parent_idx = self.parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[parent_idx]) {
+                self.items.swap(idx, parent_idx);
+            }
+            idx = parent_idx;
+        }
+    }
+
     fn parent_idx(&self, idx: usize) -> usize {
         idx / 2
+    }
+
+    fn parent_present(&self, idx: usize) -> bool {
+        self.parent_idx(idx) > 0
     }
 
     fn children_present(&self, idx: usize) -> bool {
@@ -210,5 +257,31 @@ mod tests {
         assert_eq!(heap.smallest_child_idx(2), 4);
         assert_eq!(heap.smallest_child_idx(3), 6);
 
+    }
+
+    //tests for heapify_up
+    #[test]
+    fn test_heapify_up(){
+        let mut heap = Heap::new_max();
+        heap.add(4);
+        heap.add(2);
+        heap.add(9);
+        heap.add(11);
+        heap.heapify_up(1);
+        println!("heap items {:?}", heap.items);
+        assert_eq!(heap.items[1], 11);
+    }
+
+    //tests for heapify_down
+    #[test]
+    fn test_heapify_down(){
+        let mut heap = Heap::new_min();
+        heap.add(4);
+        heap.add(2);
+        heap.add(9);
+        heap.add(11);
+        heap.heapify_down(1);
+        println!("heap items {:?}", heap.items);
+        assert_eq!(heap.items[1], 2);
     }
 }
